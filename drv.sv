@@ -1,0 +1,28 @@
+class drv extends uvm_driver#(trans);
+  'uvm_component_utils(drv)
+  
+  trans tr;
+  virtual mul_if mif;
+  function new(string name="drv",uvm_component parent=null);
+    super.new(name,parent);
+  endfunction
+  
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase)
+    if(!uvm_config_db#(virtual mul_if)::get(this,""."mif",mif))
+            `uvm_error("drv","Unable to access Interface");
+  endfunction
+  virtual task run_phase(uvm_phase phase)
+    tr=trans::type_id::create("tr");
+    forever
+      begin
+        seq_item_port.get_next_item(tr);
+        mif.a<=tr.a;
+        mif.b<=tr.b;
+        mif.y<=tr.y;
+    `uvm_info("DRV", $sformatf("a : %0d  b : %0d  y : %0d", tr.a, tr.b, tr.y), UVM_NONE);
+        seq_item_port.item_done();
+        #20;
+      end
+  endtask
+endclass
